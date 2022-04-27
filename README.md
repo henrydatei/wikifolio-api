@@ -3,7 +3,7 @@ A Python API-Wrapper for the unofficial wikifolio API
 
 ## Usage
 - Clone this repo
-- Create a new file inside it with the following content
+- Create a new file inside it with the following content (the wikifolioID is the name of your wikifolio, e.g. "wf000igb03")
 ```python
 from wikifolio import Wikifolio
 
