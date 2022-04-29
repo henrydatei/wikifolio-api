@@ -70,10 +70,7 @@ class Wikifolio:
         params = {"amount": amount, "buysell": "buy", "limitPrice": limitPrice, "orderType": "limit", "stopLossLimitPrice": "", "stopLossStopPrice": "", "stopPrice": 0, "takeProfitLimitPrice": "", "underlyingIsin": isin, "validUntil": validUntil, "wikifolioId": self.wikifolioID}
         r = requests.post("https://www.wikifolio.com/api/virtualorder/placeorder", data = params, cookies = self.cookie)
         r.raise_for_status()
-        if r.json["success"]:
-            return r.json["orderGuid"]
-        else:
-            return r.json()
+        return r.json()
 
     def sellLimit(self, amount, isin, limitPrice, validUntil = ""):
         if validUntil == "":
@@ -81,13 +78,23 @@ class Wikifolio:
         params = {"amount": amount, "buysell": "sell", "limitPrice": limitPrice, "orderType": "limit", "stopLossLimitPrice": "", "stopLossStopPrice": "", "stopPrice": 0, "takeProfitLimitPrice": "", "underlyingIsin": isin, "validUntil": validUntil, "wikifolioId": self.wikifolioID}
         r = requests.post("https://www.wikifolio.com/api/virtualorder/placeorder", data = params, cookies = self.cookie)
         r.raise_for_status()
-        if r.json["success"]:
-            return r.json["orderGuid"]
-        else:
-            return r.json()
+        return r.json()
 
     def tradeExecutionStatus(self, orderID):
         params = {"order": orderID}
         r = requests.get("https://www.wikifolio.com/api/virtualorder/tradeexecutionstatus", params = params, cookies = self.cookie)
+        r.raise_for_status()
+        return r.json()
+
+    def search(self, term):
+        params = {"term": term, "wikifolio": self.wikifolioID}
+        r = requests.post("https://www.wikifolio.com/dynamic/de/de/publish/autocompleteunderlyings", data = params, cookies = self.cookie)
+        r.raise_for_status()
+        return r.json()
+
+    def getContent(self):
+        header = {"accept": "application/json"}
+        params = {"includeportfolio": True, "country": "de", "language": "de"}
+        r = requests.get("https://www.wikifolio.com/api/chart/{}/data".format(self.wikifolioID), params = params, headers = header)
         r.raise_for_status()
         return r.json()
