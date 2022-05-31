@@ -7,10 +7,10 @@ from datetime import datetime, timedelta
 class Wikifolio:
     cookie = None
     name = None
-    wikifolioID = None
+    wikifolio_id = None
     rawData = None
 
-    def __init__(self, username, password, wikifolioName):
+    def __init__(self, username, password, wikifolio_name):
         params = {
             "email": username,
             "password": password,
@@ -22,10 +22,10 @@ class Wikifolio:
         )
         r.raise_for_status()
         self.cookie = r.cookies
-        self.name = wikifolioName
-        self.getWikifolioID(wikifolioName)
+        self.name = wikifolio_name
+        self._get_wikifolio_id(wikifolio_name)
 
-    def getWikifolioID(self, name):
+    def _get_wikifolio_id(self, name):
         r = requests.get(
             "https://www.wikifolio.com/de/de/w/{}".format(name),
             cookies=self.cookie,
@@ -33,69 +33,69 @@ class Wikifolio:
         r.raise_for_status()
         html = etree.fromstring(r.text)
         result = json.loads(html.xpath('//*[@id="__NEXT_DATA__"]/text()')[0])
-        self.wikifolioID = result["props"]["pageProps"]["data"]["wikifolio"]["id"]
+        self.wikifolio_id = result["props"]["pageProps"]["data"]["wikifolio"]["id"]
         self.rawData = result
 
     def _get_wikifolio_key_figure(self, metric):
         key_figures = self.rawData["props"]["pageProps"]["data"]["keyFigures"]
         return key_figures[metric]["ranking"]["value"]
 
-    def getPerformanceSinceEmission(self):
+    def get_performance_since_emission(self):
         return self._get_wikifolio_key_figure("performanceSinceEmission")
 
-    def getPerformanceEver(self):
+    def get_performance_ever(self):
         return self._get_wikifolio_key_figure("performanceEver")
 
-    def getPerformanceOneYear(self):
+    def get_performance_one_year(self):
         return self._get_wikifolio_key_figure("performanceOneYear")
 
-    def getPerformance3Years(self):
+    def get_performance_three_years(self):
         return self._get_wikifolio_key_figure("performance3Years")
 
-    def getPerformance5Years(self):
+    def get_performance_five_years(self):
         return self._get_wikifolio_key_figure("performance5Years")
 
-    def getPerformanceYTD(self):
+    def get_performance_ytd(self):
         return self._get_wikifolio_key_figure("performanceYTD")
 
-    def getPerformanceAnnualized(self):
+    def get_performance_annualized(self):
         return self._get_wikifolio_key_figure("performanceAnnualized")
 
-    def getPerformanceOneMonth(self):
+    def get_performance_one_month(self):
         return self._get_wikifolio_key_figure("performanceOneMonth")
 
-    def getPerformance6Months(self):
+    def get_performance_six_months(self):
         return self._get_wikifolio_key_figure("performance6Months")
 
-    def getPerformanceIntraday(self):
+    def get_performance_intraday(self):
         return self._get_wikifolio_key_figure("performanceIntraday")
 
-    def getMaxLoss(self):
+    def get_max_loss(self):
         return self._get_wikifolio_key_figure("maxLoss")
 
-    def getRiskFactor(self):
+    def get_risk_factor(self):
         return self._get_wikifolio_key_figure("riskFactor")
 
-    def getSharpRatio(self):
+    def get_sharp_ratio(self):
         return self._get_wikifolio_key_figure("sharpRatio")
 
-    def buyLimit(self, amount, isin, limitPrice, validUntil=""):
-        if validUntil == "":
-            validUntil = datetime.strftime(
+    def buy_limit(self, amount, isin, limit_price, valid_until=""):
+        if valid_until == "":
+            valid_until = datetime.strftime(
                 datetime.now() + timedelta(days=1), "%Y-%m-%dT%X.%fZ"
             )
         params = {
             "amount": amount,
             "buysell": "buy",
-            "limitPrice": limitPrice,
+            "limitPrice": limit_price,
             "orderType": "limit",
             "stopLossLimitPrice": "",
             "stopLossStopPrice": "",
             "stopPrice": 0,
             "takeProfitLimitPrice": "",
             "underlyingIsin": isin,
-            "validUntil": validUntil,
-            "wikifolioId": self.wikifolioID,
+            "validUntil": valid_until,
+            "wikifolioId": self.wikifolio_id,
         }
         r = requests.post(
             "https://www.wikifolio.com/api/virtualorder/placeorder",
@@ -105,23 +105,23 @@ class Wikifolio:
         r.raise_for_status()
         return r.json()
 
-    def sellLimit(self, amount, isin, limitPrice, validUntil=""):
-        if validUntil == "":
-            validUntil = datetime.strftime(
+    def sell_limit(self, amount, isin, limit_price, valid_until=""):
+        if valid_until == "":
+            valid_until = datetime.strftime(
                 datetime.now() + timedelta(days=1), "%Y-%m-%dT%X.%fZ"
             )
         params = {
             "amount": amount,
             "buysell": "sell",
-            "limitPrice": limitPrice,
+            "limitPrice": limit_price,
             "orderType": "limit",
             "stopLossLimitPrice": "",
             "stopLossStopPrice": "",
             "stopPrice": 0,
             "takeProfitLimitPrice": "",
             "underlyingIsin": isin,
-            "validUntil": validUntil,
-            "wikifolioId": self.wikifolioID,
+            "validUntil": valid_until,
+            "wikifolioId": self.wikifolio_id,
         }
         r = requests.post(
             "https://www.wikifolio.com/api/virtualorder/placeorder",
@@ -131,9 +131,9 @@ class Wikifolio:
         r.raise_for_status()
         return r.json()
 
-    def tradeExecutionStatus(self, orderID):
+    def trade_execution_status(self, order_id):
         params = {
-            "order": orderID,
+            "order": order_id,
         }
         r = requests.get(
             "https://www.wikifolio.com/api/virtualorder/tradeexecutionstatus",
@@ -146,7 +146,7 @@ class Wikifolio:
     def search(self, term):
         params = {
             "term": term,
-            "wikifolio": self.wikifolioID,
+            "wikifolio": self.wikifolio_id,
         }
         r = requests.post(
             "https://www.wikifolio.com/dynamic/de/de/publish/autocompleteunderlyings",
@@ -156,7 +156,7 @@ class Wikifolio:
         r.raise_for_status()
         return r.json()
 
-    def getContent(self):
+    def get_content(self):
         header = {
             "accept": "application/json",
         }
@@ -166,7 +166,7 @@ class Wikifolio:
             "language": "de",
         }
         r = requests.get(
-            "https://www.wikifolio.com/api/chart/{}/data".format(self.wikifolioID),
+            "https://www.wikifolio.com/api/chart/{}/data".format(self.wikifolio_id),
             params=params,
             headers=header,
         )
