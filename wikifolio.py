@@ -185,3 +185,22 @@ class Wikifolio:
         )
         r.raise_for_status()
         return r.json()
+
+    def get_trade_history(self, page=0, page_size=10):
+        header = {
+            "accept": "application/json",
+        }
+        params = {
+            "page": page,
+            "pagesize": page_size,
+            "country": "de",
+            "language": "de",
+        }
+        r = requests.get(
+            "https://www.wikifolio.com/api/wikifolio/{}/tradehistory".format(self.wikifolio_id),
+            params=params,
+            headers=header,
+            cookies=self.cookie,
+        )
+        r.raise_for_status()
+        return r.json()
