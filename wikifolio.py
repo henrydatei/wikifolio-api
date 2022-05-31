@@ -3,6 +3,7 @@ from lxml import etree
 import json
 from datetime import datetime, timedelta
 
+
 class Wikifolio:
     cookie = None
     name = None
@@ -10,15 +11,25 @@ class Wikifolio:
     rawData = None
 
     def __init__(self, username, password, wikifolioName):
-        params = {"email": username, "password": password, "keepLoggedIn": True}
-        r = requests.post("https://www.wikifolio.com/api/login?country=de&language=de", data = params)
+        params = {
+            "email": username,
+            "password": password,
+            "keepLoggedIn": True
+        }
+        r = requests.post(
+            "https://www.wikifolio.com/api/login?country=de&language=de",
+            data=params,
+        )
         r.raise_for_status()
         self.cookie = r.cookies
         self.name = wikifolioName
         self.getWikifolioID(wikifolioName)
 
     def getWikifolioID(self, name):
-        r = requests.get("https://www.wikifolio.com/de/de/w/{}".format(name), cookies = self.cookie)
+        r = requests.get(
+            "https://www.wikifolio.com/de/de/w/{}".format(name),
+            cookies=self.cookie,
+        )
         r.raise_for_status()
         html = etree.fromstring(r.text)
         result = json.loads(html.xpath('//*[@id="__NEXT_DATA__"]/text()')[0])
@@ -68,37 +79,96 @@ class Wikifolio:
     def getSharpRatio(self):
         return self._get_wikifolio_key_figure("sharpRatio")
 
-    def buyLimit(self, amount, isin, limitPrice, validUntil = ""):
+    def buyLimit(self, amount, isin, limitPrice, validUntil=""):
         if validUntil == "":
-            validUntil = datetime.strftime(datetime.now() + timedelta(days = 1), "%Y-%m-%dT%X.%fZ")
-        params = {"amount": amount, "buysell": "buy", "limitPrice": limitPrice, "orderType": "limit", "stopLossLimitPrice": "", "stopLossStopPrice": "", "stopPrice": 0, "takeProfitLimitPrice": "", "underlyingIsin": isin, "validUntil": validUntil, "wikifolioId": self.wikifolioID}
-        r = requests.post("https://www.wikifolio.com/api/virtualorder/placeorder", data = params, cookies = self.cookie)
+            validUntil = datetime.strftime(
+                datetime.now() + timedelta(days=1), "%Y-%m-%dT%X.%fZ"
+            )
+        params = {
+            "amount": amount,
+            "buysell": "buy",
+            "limitPrice": limitPrice,
+            "orderType": "limit",
+            "stopLossLimitPrice": "",
+            "stopLossStopPrice": "",
+            "stopPrice": 0,
+            "takeProfitLimitPrice": "",
+            "underlyingIsin": isin,
+            "validUntil": validUntil,
+            "wikifolioId": self.wikifolioID,
+        }
+        r = requests.post(
+            "https://www.wikifolio.com/api/virtualorder/placeorder",
+            data=params,
+            cookies=self.cookie,
+        )
         r.raise_for_status()
         return r.json()
 
-    def sellLimit(self, amount, isin, limitPrice, validUntil = ""):
+    def sellLimit(self, amount, isin, limitPrice, validUntil=""):
         if validUntil == "":
-            validUntil = datetime.strftime(datetime.now() + timedelta(days = 1), "%Y-%m-%dT%X.%fZ")
-        params = {"amount": amount, "buysell": "sell", "limitPrice": limitPrice, "orderType": "limit", "stopLossLimitPrice": "", "stopLossStopPrice": "", "stopPrice": 0, "takeProfitLimitPrice": "", "underlyingIsin": isin, "validUntil": validUntil, "wikifolioId": self.wikifolioID}
-        r = requests.post("https://www.wikifolio.com/api/virtualorder/placeorder", data = params, cookies = self.cookie)
+            validUntil = datetime.strftime(
+                datetime.now() + timedelta(days=1), "%Y-%m-%dT%X.%fZ"
+            )
+        params = {
+            "amount": amount,
+            "buysell": "sell",
+            "limitPrice": limitPrice,
+            "orderType": "limit",
+            "stopLossLimitPrice": "",
+            "stopLossStopPrice": "",
+            "stopPrice": 0,
+            "takeProfitLimitPrice": "",
+            "underlyingIsin": isin,
+            "validUntil": validUntil,
+            "wikifolioId": self.wikifolioID,
+        }
+        r = requests.post(
+            "https://www.wikifolio.com/api/virtualorder/placeorder",
+            data=params,
+            cookies=self.cookie,
+        )
         r.raise_for_status()
         return r.json()
 
     def tradeExecutionStatus(self, orderID):
-        params = {"order": orderID}
-        r = requests.get("https://www.wikifolio.com/api/virtualorder/tradeexecutionstatus", params = params, cookies = self.cookie)
+        params = {
+            "order": orderID,
+        }
+        r = requests.get(
+            "https://www.wikifolio.com/api/virtualorder/tradeexecutionstatus",
+            params=params,
+            cookies=self.cookie,
+        )
         r.raise_for_status()
         return r.json()
 
     def search(self, term):
-        params = {"term": term, "wikifolio": self.wikifolioID}
-        r = requests.post("https://www.wikifolio.com/dynamic/de/de/publish/autocompleteunderlyings", data = params, cookies = self.cookie)
+        params = {
+            "term": term,
+            "wikifolio": self.wikifolioID,
+        }
+        r = requests.post(
+            "https://www.wikifolio.com/dynamic/de/de/publish/autocompleteunderlyings",
+            data=params,
+            cookies=self.cookie,
+        )
         r.raise_for_status()
         return r.json()
 
     def getContent(self):
-        header = {"accept": "application/json"}
-        params = {"includeportfolio": True, "country": "de", "language": "de"}
-        r = requests.get("https://www.wikifolio.com/api/chart/{}/data".format(self.wikifolioID), params = params, headers = header)
+        header = {
+            "accept": "application/json",
+        }
+        params = {
+            "includeportfolio": True,
+            "country": "de",
+            "language": "de",
+        }
+        r = requests.get(
+            "https://www.wikifolio.com/api/chart/{}/data".format(self.wikifolioID),
+            params=params,
+            headers=header,
+        )
         r.raise_for_status()
         return r.json()
