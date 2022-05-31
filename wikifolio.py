@@ -25,44 +25,48 @@ class Wikifolio:
         self.wikifolioID = result["props"]["pageProps"]["data"]["wikifolio"]["id"]
         self.rawData = result
 
+    def _get_wikifolio_key_figure(self, metric):
+        key_figures = self.rawData["props"]["pageProps"]["data"]["keyFigures"]
+        return key_figures[metric]["ranking"]["value"]
+
     def getPerformanceSinceEmission(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["performanceSinceEmission"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("performanceSinceEmission")
 
     def getPerformanceEver(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["performanceEver"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("performanceEver")
 
     def getPerformanceOneYear(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["performanceOneYear"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("performanceOneYear")
 
     def getPerformance3Years(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["performance3Years"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("performance3Years")
 
     def getPerformance5Years(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["performance5Years"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("performance5Years")
 
     def getPerformanceYTD(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["performanceYTD"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("performanceYTD")
 
     def getPerformanceAnnualized(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["performanceAnnualized"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("performanceAnnualized")
 
     def getPerformanceOneMonth(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["performanceOneMonth"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("performanceOneMonth")
 
     def getPerformance6Months(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["performance6Months"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("performance6Months")
 
     def getPerformanceIntraday(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["performanceIntraday"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("performanceIntraday")
 
     def getMaxLoss(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["maxLoss"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("maxLoss")
 
     def getRiskFactor(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["riskFactor"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("riskFactor")
 
     def getSharpRatio(self):
-        return self.rawData["props"]["pageProps"]["data"]["keyFigures"]["sharpRatio"]["ranking"]["value"]
+        return self._get_wikifolio_key_figure("sharpRatio")
 
     def buyLimit(self, amount, isin, limitPrice, validUntil = ""):
         if validUntil == "":
