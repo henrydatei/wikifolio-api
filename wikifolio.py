@@ -40,43 +40,56 @@ class Wikifolio:
         key_figures = self.rawData["props"]["pageProps"]["data"]["keyFigures"]
         return key_figures[metric]["ranking"]["value"]
 
-    def get_performance_since_emission(self):
+    @property
+    def performance_since_emission(self):
         return self._get_wikifolio_key_figure("performanceSinceEmission")
 
-    def get_performance_ever(self):
+    @property
+    def performance_ever(self):
         return self._get_wikifolio_key_figure("performanceEver")
 
-    def get_performance_one_year(self):
+    @property
+    def performance_one_year(self):
         return self._get_wikifolio_key_figure("performanceOneYear")
 
-    def get_performance_three_years(self):
+    @property
+    def performance_three_years(self):
         return self._get_wikifolio_key_figure("performance3Years")
 
-    def get_performance_five_years(self):
+    @property
+    def performance_five_years(self):
         return self._get_wikifolio_key_figure("performance5Years")
 
-    def get_performance_ytd(self):
+    @property
+    def performance_ytd(self):
         return self._get_wikifolio_key_figure("performanceYTD")
 
-    def get_performance_annualized(self):
+    @property
+    def performance_annualized(self):
         return self._get_wikifolio_key_figure("performanceAnnualized")
 
-    def get_performance_one_month(self):
+    @property
+    def performance_one_month(self):
         return self._get_wikifolio_key_figure("performanceOneMonth")
 
-    def get_performance_six_months(self):
+    @property
+    def performance_six_months(self):
         return self._get_wikifolio_key_figure("performance6Months")
 
-    def get_performance_intraday(self):
+    @property
+    def performance_intraday(self):
         return self._get_wikifolio_key_figure("performanceIntraday")
 
-    def get_max_loss(self):
+    @property
+    def max_loss(self):
         return self._get_wikifolio_key_figure("maxLoss")
 
-    def get_risk_factor(self):
+    @property
+    def risk_factor(self):
         return self._get_wikifolio_key_figure("riskFactor")
 
-    def get_sharp_ratio(self):
+    @property
+    def sharp_ratio(self):
         return self._get_wikifolio_key_figure("sharpRatio")
 
     def buy_limit(self, amount, isin, limit_price, valid_until=""):
