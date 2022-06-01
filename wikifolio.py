@@ -88,7 +88,7 @@ class Wikifolio:
     wikifolio_id = None
     rawData = None
 
-    def __init__(self, username, password, wikifolio_name):
+    def __init__(self, username: str, password: str, wikifolio_name: str) -> None:
         params = {
             "email": username,
             "password": password,
@@ -103,7 +103,7 @@ class Wikifolio:
         self.name = wikifolio_name
         self._get_wikifolio_id(wikifolio_name)
 
-    def _get_wikifolio_id(self, name):
+    def _get_wikifolio_id(self, name: str) -> None:
         r = requests.get(
             "https://www.wikifolio.com/de/de/w/{}".format(name),
             cookies=self.cookie,
@@ -114,64 +114,70 @@ class Wikifolio:
         self.wikifolio_id = result["props"]["pageProps"]["data"]["wikifolio"]["id"]
         self.rawData = result
 
-    def _get_wikifolio_key_figure(self, metric):
+    def _get_wikifolio_key_figure(self, metric) -> typing.Optional[float]:
         key_figures = self.rawData["props"]["pageProps"]["data"]["keyFigures"]
         return key_figures[metric]["ranking"]["value"]
 
     @property
-    def performance_since_emission(self):
+    def performance_since_emission(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("performanceSinceEmission")
 
     @property
-    def performance_ever(self):
+    def performance_ever(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("performanceEver")
 
     @property
-    def performance_one_year(self):
+    def performance_one_year(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("performanceOneYear")
 
     @property
-    def performance_three_years(self):
+    def performance_three_years(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("performance3Years")
 
     @property
-    def performance_five_years(self):
+    def performance_five_years(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("performance5Years")
 
     @property
-    def performance_ytd(self):
+    def performance_ytd(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("performanceYTD")
 
     @property
-    def performance_annualized(self):
+    def performance_annualized(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("performanceAnnualized")
 
     @property
-    def performance_one_month(self):
+    def performance_one_month(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("performanceOneMonth")
 
     @property
-    def performance_six_months(self):
+    def performance_six_months(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("performance6Months")
 
     @property
-    def performance_intraday(self):
+    def performance_intraday(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("performanceIntraday")
 
     @property
-    def max_loss(self):
+    def max_loss(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("maxLoss")
 
     @property
-    def risk_factor(self):
+    def risk_factor(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("riskFactor")
 
     @property
-    def sharp_ratio(self):
+    def sharp_ratio(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("sharpRatio")
 
-    def buy_limit(self, amount, isin, limit_price, valid_until="") -> OrderResponse:
-        if valid_until == "":
+    def buy_limit(
+            self,
+            amount: int,
+            isin: str,
+            limit_price: float,
+            valid_until: typing.Optional[str] = None
+    ) -> OrderResponse:
+        if not valid_until:
             valid_until = datetime.strftime(
                 datetime.now() + timedelta(days=1), "%Y-%m-%dT%X.%fZ"
             )
@@ -197,8 +203,14 @@ class Wikifolio:
         raw_json = r.json()
         return OrderResponse(**raw_json)
 
-    def sell_limit(self, amount, isin, limit_price, valid_until="") -> OrderResponse:
-        if valid_until == "":
+    def sell_limit(
+            self,
+            amount: int,
+            isin: str,
+            limit_price: float,
+            valid_until: typing.Optional[str] = None
+    ) -> OrderResponse:
+        if not valid_until:
             valid_until = datetime.strftime(
                 datetime.now() + timedelta(days=1), "%Y-%m-%dT%X.%fZ"
             )
@@ -224,9 +236,9 @@ class Wikifolio:
         raw_json = r.json()
         return OrderResponse(**raw_json)
 
-    def trade_execution_status(self, order_id) -> ExecutionStatusResponse:
+    def trade_execution_status(self, order_uuid: str) -> ExecutionStatusResponse:
         params = {
-            "order": order_id,
+            "order": order_uuid,
         }
         r = requests.get(
             "https://www.wikifolio.com/api/virtualorder/tradeexecutionstatus",
@@ -237,7 +249,7 @@ class Wikifolio:
         raw_json = r.json()
         return ExecutionStatusResponse(**raw_json)
 
-    def search(self, term) -> typing.List[SearchResult]:
+    def search(self, term: str) -> typing.List[SearchResult]:
         params = {
             "term": term,
             "wikifolio": self.wikifolio_id,
@@ -270,7 +282,7 @@ class Wikifolio:
         portfolio = raw_json["portfolio"]
         return Portfolio(**portfolio)
 
-    def get_trade_history(self, page=0, page_size=10) -> typing.List[Order]:
+    def get_trade_history(self, page: int = 0, page_size: int = 10) -> typing.List[Order]:
         header = {
             "accept": "application/json",
         }
