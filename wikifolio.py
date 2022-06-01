@@ -1,7 +1,85 @@
 import requests
 from lxml import etree
 import json
+import typing
 from datetime import datetime, timedelta
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class OrderResponse:
+    success: bool
+    reason: str
+    orderGuid: str
+
+
+@dataclass(frozen=True)
+class ExecutionStatusResponse:
+    feedback: str
+    message: str
+    continueCheck: bool
+    isRejected: bool
+
+
+@dataclass(frozen=True)
+class SearchResult:
+    Isin: str
+    Wkn: str
+    ShortDescription: str
+    InvestmentUniverse: str
+    LongDescrtiption: str
+    PartnerLink: str
+    SecurityType: int
+    IsAvailableInWikifolio: bool
+    IsNotAvailableReason: typing.Optional[str]
+    Relevance: float
+    Issuer: typing.Optional[int]
+
+
+@dataclass(frozen=True)
+class PortfolioUnderlying:
+    assetType: str
+    name: str
+    amount: float
+
+
+@dataclass(init=False, frozen=True)
+class Portfolio:
+    isSuperWikifolio: bool
+    hasWeighting: bool
+    underlyings: typing.List[PortfolioUnderlying]
+
+    def __init__(self, isSuperWikifolio, hasWeighting, underlyings):
+        object.__setattr__(self, "isSuperWikifolio", isSuperWikifolio)
+        object.__setattr__(self, "hasWeighting", hasWeighting)
+        object.__setattr__(self, "underlyings", [
+            PortfolioUnderlying(**underlying) for underlying in underlyings
+        ])
+
+
+@dataclass(frozen=True)
+class Order:
+    id: str
+    name: str
+    isin: str
+    link: str
+    openLinkInSameTab: bool
+    isMainOrder: bool
+    mainOrderId: str
+    subOrders: typing.List["Order"]
+    orderType: str
+    issuer: int
+    securityType: int
+    executionPrice: float
+    executionDate: str # TODO should be datetime '2022-05-31T22:16:35+02:00'
+    performance: float
+    weightage: float
+    investmentUniverseGroupId: str
+    isLeveraged: bool
+    linkParameter: str
+    corporateActionType: str
+    underlyingConcerned: str
+    cash: str
 
 
 class Wikifolio:
@@ -92,7 +170,7 @@ class Wikifolio:
     def sharp_ratio(self):
         return self._get_wikifolio_key_figure("sharpRatio")
 
-    def buy_limit(self, amount, isin, limit_price, valid_until=""):
+    def buy_limit(self, amount, isin, limit_price, valid_until="") -> OrderResponse:
         if valid_until == "":
             valid_until = datetime.strftime(
                 datetime.now() + timedelta(days=1), "%Y-%m-%dT%X.%fZ"
@@ -116,9 +194,10 @@ class Wikifolio:
             cookies=self.cookie,
         )
         r.raise_for_status()
-        return r.json()
+        raw_json = r.json()
+        return OrderResponse(**raw_json)
 
-    def sell_limit(self, amount, isin, limit_price, valid_until=""):
+    def sell_limit(self, amount, isin, limit_price, valid_until="") -> OrderResponse:
         if valid_until == "":
             valid_until = datetime.strftime(
                 datetime.now() + timedelta(days=1), "%Y-%m-%dT%X.%fZ"
@@ -142,9 +221,10 @@ class Wikifolio:
             cookies=self.cookie,
         )
         r.raise_for_status()
-        return r.json()
+        raw_json = r.json()
+        return OrderResponse(**raw_json)
 
-    def trade_execution_status(self, order_id):
+    def trade_execution_status(self, order_id) -> ExecutionStatusResponse:
         params = {
             "order": order_id,
         }
@@ -154,9 +234,10 @@ class Wikifolio:
             cookies=self.cookie,
         )
         r.raise_for_status()
-        return r.json()
+        raw_json = r.json()
+        return ExecutionStatusResponse(**raw_json)
 
-    def search(self, term):
+    def search(self, term) -> typing.List[SearchResult]:
         params = {
             "term": term,
             "wikifolio": self.wikifolio_id,
@@ -167,9 +248,10 @@ class Wikifolio:
             cookies=self.cookie,
         )
         r.raise_for_status()
-        return r.json()
+        raw_json = r.json()
+        return [SearchResult(**raw_search_result) for raw_search_result in raw_json]
 
-    def get_content(self):
+    def get_content(self) -> Portfolio:
         header = {
             "accept": "application/json",
         }
@@ -184,9 +266,11 @@ class Wikifolio:
             headers=header,
         )
         r.raise_for_status()
-        return r.json()
+        raw_json = r.json()
+        portfolio = raw_json["portfolio"]
+        return Portfolio(**portfolio)
 
-    def get_trade_history(self, page=0, page_size=10):
+    def get_trade_history(self, page=0, page_size=10) -> typing.List[Order]:
         header = {
             "accept": "application/json",
         }
@@ -203,4 +287,6 @@ class Wikifolio:
             cookies=self.cookie,
         )
         r.raise_for_status()
-        return r.json()
+        raw_json = r.json()
+        orders = raw_json["tradeHistory"]["orders"]
+        return [Order(**raw_order) for raw_order in orders]
