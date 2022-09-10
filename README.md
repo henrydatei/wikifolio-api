@@ -14,9 +14,7 @@ print(wf.performance_ever)
 
 ## Features
 - Perfomance Indicators (`wf.performance_since_emission`, `wf.performance_ever`, ...)
-- Buy and Sell orders (Limit order and quote order)
-
-Please note that there are currently some strange things going on when creating quote orders: Not every quote order is successful, so try the order again if it's not working! I'm trying to fix this.
+- Buy and Sell orders (limit order and quote order)
 
 ## TODOs
 - 2FA

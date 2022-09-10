@@ -306,127 +306,131 @@ class Wikifolio:
         return [Order(**raw_order) for raw_order in orders]
 
     def buy_quote(self, amount: int, isin: str) -> OrderResponse:
-        params = {
-            "clientProtocol": 1.5, 
-            "connectionData": [
-                {"name":"livehub"},
-                {"name":"quotehub"}
-            ],
-            "_": int(time.time() * 1000),
-        }
-        r = requests.get(
-            "https://www.wikifolio.com/de/de/signalr/negotiate",
-            data = params,
-            cookies = self.cookie
-        )
-        r.raise_for_status()
-        connection_token = r.json()["ConnectionToken"]
-        protocol_version = r.json()["ProtocolVersion"]
+        while True:
+            try:
+                params = {
+                    "clientProtocol": 1.5, 
+                    "connectionData": [
+                        {"name":"livehub"},
+                        {"name":"quotehub"}
+                    ],
+                    "_": int(time.time() * 1000),
+                }
+                r = requests.get(
+                    "https://www.wikifolio.com/de/de/signalr/negotiate",
+                    data = params,
+                    cookies = self.cookie
+                )
+                r.raise_for_status()
+                connection_token = r.json()["ConnectionToken"]
+                protocol_version = r.json()["ProtocolVersion"]
 
-        ws = websocket.WebSocket()
-        tid = 1 # random.randint(1, 10)
-        socket = f'wss://www.wikifolio.com/de/de/signalr/connect?transport=webSockets&clientProtocol={protocol_version}&connectionToken={connection_token}&connectionData=%5B%7B%22name%22%3A%22livehub%22%7D%2C%7B%22name%22%3A%22quotehub%22%7D%5D&tid={tid}'
-        ws.connect(socket)
+                ws = websocket.WebSocket()
+                tid = 1 # random.randint(1, 10)
+                socket = f'wss://www.wikifolio.com/de/de/signalr/connect?transport=webSockets&clientProtocol={protocol_version}&connectionToken={connection_token}&connectionData=%5B%7B%22name%22%3A%22livehub%22%7D%2C%7B%22name%22%3A%22quotehub%22%7D%5D&tid={tid}'
+                ws.connect(socket)
 
-        wiki_id = self.wikifolio_id
-        trade_data = {
-            'H': "quotehub", 
-            'M': "GetQuote", 
-            'A': [wiki_id, isin, f"{amount}", 910], #Vorletzte Ziffer Menge; 910 Buy Order, 920 Sell Order
-            'I': 1 #Anzahl der x-Anfrage an den Server
-            }
+                wiki_id = self.wikifolio_id
+                trade_data = {
+                    'H': "quotehub", 
+                    'M': "GetQuote", 
+                    'A': [wiki_id, isin, f"{amount}", 910], #Vorletzte Ziffer Menge; 910 Buy Order, 920 Sell Order
+                    'I': 1 #Anzahl der x-Anfrage an den Server
+                    }
 
-        ws.recv_data()
-        ws.send(json.dumps(trade_data))
+                ws.recv_data()
+                ws.send(json.dumps(trade_data))
 
-        QuoteId = ws.recv_data()
-        print(QuoteId)
-        QuoteId = json.loads(QuoteId[1].decode('utf-8'))['M'][0]['A'][0]['QuoteId']
-        print(QuoteId)
-        ws.close()
+                quoteId = ws.recv_data()
+                quoteId = json.loads(quoteId[1].decode('utf-8'))['M'][0]['A'][0]['QuoteId']
+                ws.close()
 
-        order = {
-            'amount': amount,
-            'buysell': "buy",
-            'limitPrice': "",
-            'orderType': "quote",
-            'quoteId': QuoteId,
-            'stopLossLimitPrice': "",
-            'stopLossStopPrice': "",
-            'stopPrice': "",
-            'takeProfitLimitPrice': "",
-            'underlyingIsin': isin,
-            'validUntil': "",
-            'wikifolioId': wiki_id
-            }
+                order = {
+                    'amount': amount,
+                    'buysell': "buy",
+                    'limitPrice': "",
+                    'orderType': "quote",
+                    'quoteId': quoteId,
+                    'stopLossLimitPrice': "",
+                    'stopLossStopPrice': "",
+                    'stopPrice': "",
+                    'takeProfitLimitPrice': "",
+                    'underlyingIsin': isin,
+                    'validUntil': "",
+                    'wikifolioId': wiki_id
+                    }
 
-        r = requests.post(
-            "https://www.wikifolio.com/api/virtualorder/placeorder",
-            data = order,
-            cookies = self.cookie
-        )
-        r.raise_for_status()
-        return OrderResponse(**r.json())
+                r = requests.post(
+                    "https://www.wikifolio.com/api/virtualorder/placeorder",
+                    data = order,
+                    cookies = self.cookie
+                )
+                r.raise_for_status()
+                return OrderResponse(**r.json())
+            except:
+                pass
 
     def sell_quote(self, amount: int, isin: str) -> OrderResponse:
-        params = {
-            "clientProtocol": 1.5, 
-            "connectionData": [
-                {"name":"livehub"},
-                {"name":"quotehub"}
-            ],
-            "_": int(time.time() * 1000),
-        }
-        r = requests.get(
-            "https://www.wikifolio.com/de/de/signalr/negotiate",
-            data = params,
-            cookies = self.cookie
-        )
-        r.raise_for_status()
-        connection_token = r.json()["ConnectionToken"]
-        protocol_version = r.json()["ProtocolVersion"]
+        while True:
+            try:
+                params = {
+                    "clientProtocol": 1.5, 
+                    "connectionData": [
+                        {"name":"livehub"},
+                        {"name":"quotehub"}
+                    ],
+                    "_": int(time.time() * 1000),
+                }
+                r = requests.get(
+                    "https://www.wikifolio.com/de/de/signalr/negotiate",
+                    data = params,
+                    cookies = self.cookie
+                )
+                r.raise_for_status()
+                connection_token = r.json()["ConnectionToken"]
+                protocol_version = r.json()["ProtocolVersion"]
 
-        ws = websocket.WebSocket()
-        tid = 1 # random.randint(1, 10)
-        socket = f'wss://www.wikifolio.com/de/de/signalr/connect?transport=webSockets&clientProtocol={protocol_version}&connectionToken={connection_token}&connectionData=%5B%7B%22name%22%3A%22livehub%22%7D%2C%7B%22name%22%3A%22quotehub%22%7D%5D&tid={tid}'
-        ws.connect(socket)
+                ws = websocket.WebSocket()
+                tid = 1 # random.randint(1, 10)
+                socket = f'wss://www.wikifolio.com/de/de/signalr/connect?transport=webSockets&clientProtocol={protocol_version}&connectionToken={connection_token}&connectionData=%5B%7B%22name%22%3A%22livehub%22%7D%2C%7B%22name%22%3A%22quotehub%22%7D%5D&tid={tid}'
+                ws.connect(socket)
 
-        wiki_id = self.wikifolio_id
-        trade_data = {
-            'H': "quotehub", 
-            'M': "GetQuote", 
-            'A': [wiki_id, isin, f"{amount}", 920], #Vorletzte Ziffer Menge; 910 Buy Order, 920 Sell Order
-            'I': 1 #Anzahl der x-Anfrage an den Server
-            }
+                wiki_id = self.wikifolio_id
+                trade_data = {
+                    'H': "quotehub", 
+                    'M': "GetQuote", 
+                    'A': [wiki_id, isin, f"{amount}", 920], #Vorletzte Ziffer Menge; 910 Buy Order, 920 Sell Order
+                    'I': 1 #Anzahl der x-Anfrage an den Server
+                    }
 
-        ws.recv_data()
-        ws.send(json.dumps(trade_data))
+                ws.recv_data()
+                ws.send(json.dumps(trade_data))
 
-        QuoteId = ws.recv_data()
-        print(QuoteId)
-        QuoteId = json.loads(QuoteId[1].decode('utf-8'))['M'][0]['A'][0]['QuoteId']
-        print(QuoteId)
-        ws.close()
+                quoteId = ws.recv_data()
+                quoteId = json.loads(quoteId[1].decode('utf-8'))['M'][0]['A'][0]['QuoteId']
+                ws.close()
 
-        order = {
-            'amount': amount,
-            'buysell': "sell",
-            'limitPrice': "",
-            'orderType': "quote",
-            'quoteId': QuoteId,
-            'stopLossLimitPrice': "",
-            'stopLossStopPrice': "",
-            'stopPrice': "",
-            'takeProfitLimitPrice': "",
-            'underlyingIsin': isin,
-            'validUntil': "",
-            'wikifolioId': wiki_id
-            }
+                order = {
+                    'amount': amount,
+                    'buysell': "sell",
+                    'limitPrice': "",
+                    'orderType': "quote",
+                    'quoteId': quoteId,
+                    'stopLossLimitPrice': "",
+                    'stopLossStopPrice': "",
+                    'stopPrice': "",
+                    'takeProfitLimitPrice': "",
+                    'underlyingIsin': isin,
+                    'validUntil': "",
+                    'wikifolioId': wiki_id
+                    }
 
-        r = requests.post(
-            "https://www.wikifolio.com/api/virtualorder/placeorder",
-            data = order,
-            cookies = self.cookie
-        )
-        r.raise_for_status()
-        return OrderResponse(**r.json())
+                r = requests.post(
+                    "https://www.wikifolio.com/api/virtualorder/placeorder",
+                    data = order,
+                    cookies = self.cookie
+                )
+                r.raise_for_status()
+                return OrderResponse(**r.json())
+            except:
+                pass
