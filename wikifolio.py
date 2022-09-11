@@ -3,86 +3,16 @@ from lxml import etree
 import json
 import typing
 from datetime import datetime, timedelta
-from dataclasses import dataclass
 import websocket
-import random
 import time
 
-@dataclass(frozen=True)
-class OrderResponse:
-    success: bool
-    reason: str
-    orderGuid: str
-
-
-@dataclass(frozen=True)
-class ExecutionStatusResponse:
-    feedback: str
-    message: str
-    continueCheck: bool
-    isRejected: bool
-
-
-@dataclass(frozen=True)
-class SearchResult:
-    Isin: str
-    Wkn: str
-    ShortDescription: str
-    InvestmentUniverse: str
-    LongDescrtiption: str
-    PartnerLink: str
-    SecurityType: int
-    IsAvailableInWikifolio: bool
-    IsNotAvailableReason: typing.Optional[str]
-    Relevance: float
-    Issuer: typing.Optional[int]
-
-
-@dataclass(frozen=True)
-class PortfolioUnderlying:
-    assetType: str
-    name: str
-    amount: float
-
-
-@dataclass(init=False, frozen=True)
-class Portfolio:
-    isSuperWikifolio: bool
-    hasWeighting: bool
-    underlyings: typing.List[PortfolioUnderlying]
-
-    def __init__(self, isSuperWikifolio, hasWeighting, underlyings):
-        object.__setattr__(self, "isSuperWikifolio", isSuperWikifolio)
-        object.__setattr__(self, "hasWeighting", hasWeighting)
-        object.__setattr__(self, "underlyings", [
-            PortfolioUnderlying(**underlying) for underlying in underlyings
-        ])
-
-
-@dataclass(frozen=True)
-class Order:
-    id: str
-    name: str
-    isin: str
-    link: str
-    openLinkInSameTab: bool
-    isMainOrder: bool
-    mainOrderId: str
-    subOrders: typing.List["Order"]
-    orderType: str
-    issuer: int
-    securityType: int
-    executionPrice: float
-    executionDate: str # TODO should be datetime '2022-05-31T22:16:35+02:00'
-    performance: float
-    weightage: float
-    investmentUniverseGroupId: str
-    isLeveraged: bool
-    linkParameter: str
-    corporateActionType: str
-    underlyingConcerned: str
-    cash: str
-
+from classes.ExecutionStatusResponse import ExecutionStatusResponse
+from classes.Order import Order
+from classes.SearchResult import SearchResult
+from classes.OrderResponse import OrderResponse
+from classes.Portfolio import Portfolio
+from classes.PortfolioUnderlying import PortfolioUnderlying
+from classes.Trader import Trader
 
 class Wikifolio:
     cookie = None
@@ -119,6 +49,13 @@ class Wikifolio:
     def _get_wikifolio_key_figure(self, metric) -> typing.Optional[float]:
         key_figures = self.rawData["props"]["pageProps"]["data"]["keyFigures"]
         return key_figures[metric]["ranking"]["value"]
+
+    def _get_wikifolio_data(self, metric):
+        key_figures = self.rawData["props"]["pageProps"]["data"]["wikifolio"]
+        return key_figures[metric]
+
+    def _get_wikifolio_universes(self, universe, subuniverse) -> typing.Optional[bool]:
+        return not self.rawData["props"]["pageProps"]["data"]["investmentUniverseData"]["universeGroups"][universe]["universes"][subuniverse]["isCrossedOut"]
 
     @property
     def performance_since_emission(self) -> typing.Optional[float]:
@@ -171,6 +108,291 @@ class Wikifolio:
     @property
     def sharp_ratio(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("sharpRatio")
+
+    @property
+    def ranking_place(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure("rankingPlace")
+
+    @property
+    def total_investments(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure("totalInvestments")
+
+    @property
+    def liquidation_figure(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure("liquidationFigure")
+    
+    @property
+    def trading_volume(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure("tradingVolume")
+
+    @property
+    def wikifolio_security_id(self) -> typing.Optional[str]:
+        return self._get_wikifolio_data("wikifolioSecurityId")
+
+    @property
+    def full_name(self) -> typing.Optional[str]:
+        return self._get_wikifolio_data("fullName")
+
+    @property
+    def short_description(self) -> typing.Optional[str]:
+        return self._get_wikifolio_data("shortDescription")
+
+    @property
+    def symbol(self) -> typing.Optional[str]:
+        return self._get_wikifolio_data("symbol")
+
+    @property
+    def description(self) -> typing.Optional[str]:
+        return self._get_wikifolio_data("description")["content"]
+
+    @property
+    def status(self) -> typing.Optional[int]:
+        return self._get_wikifolio_data("status")
+
+    @property
+    def wkn(self) -> typing.Optional[str]:
+        return self._get_wikifolio_data("wkn")
+
+    @property
+    def is_on_watchlist(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_data("isOnWatchlist")
+
+    @property
+    def is_licensed(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_data("isLicensed")
+
+    @property
+    def is_investable(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_data("isInvestable")
+
+    @property
+    def has_been_investable(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_data("hasBeenInvestable")
+
+    @property
+    def isin(self) -> typing.Optional[str]:
+        return self._get_wikifolio_data("isin")
+
+    @property
+    def chart_image_url(self) -> typing.Optional[str]:
+        return self._get_wikifolio_data("chartImageUrl")
+
+    @property
+    def emission_date(self) -> typing.Optional[str]:
+        return self._get_wikifolio_data("emissionDate")
+
+    @property
+    def daily_fee(self) -> typing.Optional[float]:
+        return self._get_wikifolio_data("dailyFee")
+
+    @property
+    def performance_fee(self) -> typing.Optional[float]:
+        return self._get_wikifolio_data("performanceFee")
+
+    @property
+    def intended_investment(self):
+        return self._get_wikifolio_data("intendedInvestment")
+
+    @property
+    def contains_leverage_products(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_data("containsLeverageProducts")
+
+    @property
+    def exchange_ratio_multiplier(self) -> typing.Optional[float]:
+        return self._get_wikifolio_data("exchangeRatioMultiplier")
+
+    @property
+    def is_second_isin(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_data("isSecondIsin")
+
+    @property
+    def currency(self) -> typing.Optional[str]:
+        return self._get_wikifolio_data("currency")
+
+    @property
+    def trader(self) -> typing.Optional[Trader]:
+        return Trader(**self.rawData["props"]["pageProps"]["data"]["trader"])
+
+    @property
+    def shares_dax(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(0,0)
+
+    @property
+    def shares_sdax(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(0,1)
+
+    @property
+    def shares_tecdax(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(0,2)
+
+    @property
+    def shares_other(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(0,3)
+
+    @property
+    def shares_mdax(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(0,4)
+
+    @property
+    def shares_europe_select(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(1,0)
+
+    @property
+    def shares_dow_jones(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(2,0)
+
+    @property
+    def shares_usa_select(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(2,1)
+
+    @property
+    def shares_nasdaq_100_select(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(2,2)
+
+    @property
+    def shares_hot_stocks(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(3,0)
+
+    @property
+    def shares_easteurope_select(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(4,0)
+
+    @property
+    def shares_japan_select(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(4,1)
+
+    @property
+    def shares_international(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(4,2)
+
+    @property
+    def etf_latin_southamerica(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,0)
+
+    @property
+    def etf_emerging_markets(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,1)
+
+    @property
+    def etf_coutries_of_europe(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,2)
+
+    @property
+    def etf_northamerica(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,3)
+
+    @property
+    def etf_other_bonds(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,4)
+
+    @property
+    def etf_world(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,5)
+
+    @property
+    def etf_commodities_etcs(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,6)
+
+    @property
+    def etf_germany(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,7)
+
+    @property
+    def etf_countries_other(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,8)
+
+    @property
+    def etf_dax(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,9)
+
+    @property
+    def etf_induboolies(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,10)
+
+    @property
+    def etf_eurostoxx(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,11)
+
+    @property
+    def etf_asia(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,12)
+
+    @property
+    def etf_europe_bonds(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,13)
+
+    @property
+    def etf_europe_complete(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,14)
+
+    @property
+    def etf_basic_resources(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,15)
+
+    @property
+    def etf_other(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(5,16)
+
+    @property
+    def fund_properties(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(6,0)
+
+    @property
+    def fund_bonds(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(6,1)
+
+    @property
+    def fund_shares(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(6,2)
+
+    @property
+    def fund_finance_market(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(6,3)
+
+    @property
+    def fund_dab(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(6,4)
+
+    @property
+    def fund_mix(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(6,5)
+
+    @property
+    def discount_certificates(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(7,0)
+
+    @property
+    def bonus_certificates(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(7,1)
+
+    @property
+    def other_investment_certificates(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(7,2)
+
+    @property
+    def knock_out_products(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(8,0)
+
+    @property
+    def warrants(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(8,1)
+
+    @property
+    def other_leverage_products(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes(8,2)
+    
+    def get_tags(self) -> typing.List[str]:
+        tags = []
+        # basics
+        for tag in self.rawData["props"]["pageProps"]["data"]["tagsData"]["basics"]:
+            tags.append(tag["label"])
+        # tradings
+        for tag in self.rawData["props"]["pageProps"]["data"]["tagsData"]["tradings"]:
+            tags.append(tag["label"])
+        # rewards
+        for tag in self.rawData["props"]["pageProps"]["data"]["tagsData"]["rewards"]:
+            tags.append(tag["label"])
+        return tags
 
     def buy_limit(
             self,
