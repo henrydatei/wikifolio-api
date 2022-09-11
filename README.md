@@ -14,6 +14,7 @@ print(wf.performance_ever)
 
 ## Features
 - Perfomance Indicators (`wf.performance_since_emission`, `wf.performance_ever`, ...)
+- Properties (see #2)
 - Buy and Sell orders (limit order and quote order)
 
 ## TODOs
