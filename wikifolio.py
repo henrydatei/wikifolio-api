@@ -56,7 +56,11 @@ class Wikifolio:
         return key_figures[metric]
 
     def _get_wikifolio_universes(self, universe, subuniverse) -> typing.Optional[bool]:
-        return not self.rawData["props"]["pageProps"]["data"]["investmentUniverseData"]["universeGroups"][universe]["universes"][subuniverse]["isCrossedOut"]
+        try:
+            allowed = not self.rawData["props"]["pageProps"]["data"]["investmentUniverseData"]["universeGroups"][universe]["universes"][subuniverse]["isCrossedOut"]
+        except:
+            allowed = False
+        return allowed
 
     def _get_wikifolio_master_data(self, metric):
         key_figures = self.rawData["props"]["pageProps"]["data"]["masterData"]
