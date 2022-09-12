@@ -51,12 +51,18 @@ class Wikifolio:
         self.rawData = result
 
     def _get_wikifolio_key_figure(self, metric) -> typing.Optional[float]:
-        key_figures = self.rawData["props"]["pageProps"]["data"]["keyFigures"]
-        return key_figures[metric]["ranking"]["value"]
+        try:
+            key_figures = self.rawData["props"]["pageProps"]["data"]["keyFigures"]
+            return key_figures[metric]["ranking"]["value"]
+        except:
+            return None
 
     def _get_wikifolio_data(self, metric):
-        key_figures = self.rawData["props"]["pageProps"]["data"]["wikifolio"]
-        return key_figures[metric]
+        try:
+            key_figures = self.rawData["props"]["pageProps"]["data"]["wikifolio"]
+            return key_figures[metric]
+        except:
+            return None
 
     def _get_wikifolio_universes(self, universe, subuniverse) -> typing.Optional[bool]:
         try:
@@ -67,7 +73,10 @@ class Wikifolio:
 
     def _get_wikifolio_master_data(self, metric):
         key_figures = self.rawData["props"]["pageProps"]["data"]["masterData"]
-        return key_figures[metric]["value"]
+        try:
+            return key_figures[metric]["value"]
+        except:
+            return None
 
     @property
     def performance_since_emission(self) -> typing.Optional[float]:
