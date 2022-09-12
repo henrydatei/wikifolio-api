@@ -57,6 +57,10 @@ class Wikifolio:
     def _get_wikifolio_universes(self, universe, subuniverse) -> typing.Optional[bool]:
         return not self.rawData["props"]["pageProps"]["data"]["investmentUniverseData"]["universeGroups"][universe]["universes"][subuniverse]["isCrossedOut"]
 
+    def _get_wikifolio_master_data(self, metric):
+        key_figures = self.rawData["props"]["pageProps"]["data"]["masterData"]
+        return key_figures[metric]["value"]
+
     @property
     def performance_since_emission(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure("performanceSinceEmission")
@@ -380,6 +384,18 @@ class Wikifolio:
     @property
     def other_leverage_products(self) -> typing.Optional[bool]:
         return self._get_wikifolio_universes(8,2)
+
+    @property
+    def creation_date(self) -> typing.Optional[str]:
+        return self._get_wikifolio_master_data("creationDate")
+
+    @property
+    def index_level(self) -> typing.Optional[str]:
+        return self._get_wikifolio_master_data("indexLevel")
+
+    @property
+    def high_watermark(self) -> typing.Optional[str]:
+        return self._get_wikifolio_master_data("highWatermark")
     
     def get_tags(self) -> typing.List[str]:
         tags = []
