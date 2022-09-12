@@ -13,6 +13,7 @@ from classes.OrderResponse import OrderResponse
 from classes.Portfolio import Portfolio
 from classes.PortfolioUnderlying import PortfolioUnderlying
 from classes.Trader import Trader
+from classes.PriceInformation import PriceInformation
 
 class Wikifolio:
     cookie = None
@@ -672,3 +673,14 @@ class Wikifolio:
                 return OrderResponse(**r.json())
             except:
                 pass
+
+    def get_price_information(self) -> PriceInformation:
+        headers = {"Accept": "application/json"}
+        params = {"country": "de", "language": "de"}
+        r = requests.get(
+            "https://www.wikifolio.com/api/wikifolio/{}/price".format(self.wikifolio_id),
+            params = params,
+            headers = headers
+        )
+        r.raise_for_status()
+        return PriceInformation(**r.json())
