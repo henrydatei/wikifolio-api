@@ -18,4 +18,4 @@ print(wf.performance_ever)
 - Buy and Sell orders (limit order and quote order)
 
 ## TODOs
-- 2FA
+- 2FA (implemented, but needs testing)

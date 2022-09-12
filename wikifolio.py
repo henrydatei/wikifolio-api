@@ -5,6 +5,7 @@ import typing
 from datetime import datetime, timedelta
 import websocket
 import time
+from pyotp import TOTP
 
 from classes.ExecutionStatusResponse import ExecutionStatusResponse
 from classes.Order import Order
@@ -20,8 +21,9 @@ class Wikifolio:
     name = None
     wikifolio_id = None
     rawData = None
+    twoFA_key = None
 
-    def __init__(self, username: str, password: str, wikifolio_name: str) -> None:
+    def __init__(self, username: str, password: str, wikifolio_name: str, twoFA_key = None) -> None:
         params = {
             "email": username,
             "password": password,
@@ -35,6 +37,7 @@ class Wikifolio:
         self.cookie = r.cookies
         self.name = wikifolio_name
         self._get_wikifolio_id(wikifolio_name)
+        self.twoFA_key = twoFA_key
 
     def _get_wikifolio_id(self, name: str) -> None:
         r = requests.get(
@@ -588,6 +591,12 @@ class Wikifolio:
                 quoteId = json.loads(quoteId[1].decode('utf-8'))['M'][0]['A'][0]['QuoteId']
                 ws.close()
 
+                if self.twoFA_key != None:
+                    auth = requests.post('https://www.wikifolio.com/api/totp/verify', data = self.twoFA_key, cookies = self.cookie)
+                    cookies = auth.cookies
+                else: 
+                    cookies = self.cookie
+
                 order = {
                     'amount': amount,
                     'buysell': "buy",
@@ -606,7 +615,7 @@ class Wikifolio:
                 r = requests.post(
                     "https://www.wikifolio.com/api/virtualorder/placeorder",
                     data = order,
-                    cookies = self.cookie
+                    cookies = cookies
                 )
                 r.raise_for_status()
                 return OrderResponse(**r.json())
@@ -653,6 +662,12 @@ class Wikifolio:
                 quoteId = json.loads(quoteId[1].decode('utf-8'))['M'][0]['A'][0]['QuoteId']
                 ws.close()
 
+                if self.twoFA_key != None:
+                    auth = requests.post('https://www.wikifolio.com/api/totp/verify', data = self.twoFA_key, cookies = self.cookie)
+                    cookies = auth.cookies
+                else: 
+                    cookies = self.cookie
+
                 order = {
                     'amount': amount,
                     'buysell': "sell",
@@ -671,7 +686,7 @@ class Wikifolio:
                 r = requests.post(
                     "https://www.wikifolio.com/api/virtualorder/placeorder",
                     data = order,
-                    cookies = self.cookie
+                    cookies = cookies
                 )
                 r.raise_for_status()
                 return OrderResponse(**r.json())
