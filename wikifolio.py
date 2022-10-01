@@ -601,7 +601,8 @@ class Wikifolio:
                 ws.close()
 
                 if self.twoFA_key != None:
-                    auth = requests.post('https://www.wikifolio.com/api/totp/verify', data = self.twoFA_key, cookies = self.cookie)
+                    totp = TOTP(self.twoFA_key)
+                    auth = requests.post('https://www.wikifolio.com/api/totp/verify', data = totp.now(), cookies = self.cookie)
                     cookies = auth.cookies
                 else: 
                     cookies = self.cookie
@@ -672,7 +673,8 @@ class Wikifolio:
                 ws.close()
 
                 if self.twoFA_key != None:
-                    auth = requests.post('https://www.wikifolio.com/api/totp/verify', data = self.twoFA_key, cookies = self.cookie)
+                    totp = TOTP(self.twoFA_key)
+                    auth = requests.post('https://www.wikifolio.com/api/totp/verify', data = totp.now(), cookies = self.cookie)
                     cookies = auth.cookies
                 else: 
                     cookies = self.cookie
