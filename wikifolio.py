@@ -1,4 +1,5 @@
 import requests
+from requests.structures import CaseInsensitiveDict
 from lxml import etree
 import json
 import typing
@@ -438,6 +439,7 @@ class Wikifolio:
             valid_until = datetime.strftime(
                 datetime.now() + timedelta(days=1), "%Y-%m-%dT%X.%fZ"
             )
+        
         params = {
             "amount": amount,
             "buysell": "buy",
@@ -457,6 +459,8 @@ class Wikifolio:
             cookies=self.cookie,
         )
         r.raise_for_status()
+        print(self.cookie)
+        print(r.text)
         raw_json = r.json()
         return OrderResponse(**raw_json)
 
@@ -561,7 +565,10 @@ class Wikifolio:
         return [Order(**raw_order) for raw_order in orders]
 
     def buy_quote(self, amount: int, isin: str) -> OrderResponse:
+        i = 1
         while True:
+            print(i)
+            i += 1
             try:
                 params = {
                     "clientProtocol": 1.5, 
@@ -633,7 +640,10 @@ class Wikifolio:
                 pass
 
     def sell_quote(self, amount: int, isin: str) -> OrderResponse:
+        i = 1
         while True:
+            print(i)
+            i += 1
             try:
                 params = {
                     "clientProtocol": 1.5, 
@@ -651,6 +661,23 @@ class Wikifolio:
                 r.raise_for_status()
                 connection_token = r.json()["ConnectionToken"]
                 protocol_version = r.json()["ProtocolVersion"]
+
+                params = {
+                    "clientProtocol": 1.5, 
+                    "connectionData": [
+                        {"name":"livehub"},
+                        {"name":"quotehub"}
+                    ],
+                    "_": int(time.time() * 1000),
+                    "transport": "webSockets",
+                    "connectionToken": connection_token
+                }
+                r = requests.get(
+                    "https://www.wikifolio.com/de/de/signalr/start",
+                    data = params,
+                    cookies = self.cookie
+                )
+                r.raise_for_status()
 
                 ws = websocket.WebSocket()
                 tid = 1 # random.randint(1, 10)
@@ -714,3 +741,17 @@ class Wikifolio:
         )
         r.raise_for_status()
         return PriceInformation(**r.json())
+
+    def is_in_portfolio(self, isin: str) -> typing.Tuple[bool, int]:
+        """
+        Returns for a given ISIN if the asset is in the portfolio and the current value of the asset.
+        """
+        content = {}
+        for underlying in self.get_content().underlyings:
+            _isin = self.search(underlying.name)[0].Isin
+            content[_isin] = underlying.amount
+        
+        if isin in content:
+            return True, content[isin]
+        else:
+            return False, 0
