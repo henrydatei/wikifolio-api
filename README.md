@@ -19,3 +19,4 @@ print(wf.performance_ever)
 
 ## TODOs
 - 2FA (implemented, but needs testing)
+- provide some Jupyter notebooks to demonstrate proper use of the "key features"
