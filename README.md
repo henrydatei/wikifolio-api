@@ -12,6 +12,9 @@ wf = Wikifolio("email", "password", "wikifolioID")
 print(wf.performance_ever)
 ```
 
+## Current state of functionality
+- tested on a wikifolio which is (not yet) investible [19.02.2023], all things except buy_quote/sell_quote succesfully tested. For my purpose limit (and stop-limit) orders are sufficient.
+
 ## Features
 - Perfomance Indicators (`wf.performance_since_emission`, `wf.performance_ever`, ...)
 - Properties (see [#2](https://github.com/henrydatei/wikifolio-api/issues/2))
