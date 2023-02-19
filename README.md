@@ -24,3 +24,4 @@ print(wf.performance_ever)
 - 2FA (implemented, but needs testing)
 - Somebody with an approved wikifolio account should test and report if and how 2FA works (as reported in the issues, real investing/trading requires 2FA)
 - provide some Jupyter notebooks to demonstrate proper use of the "key features"
+- in the next days some other code contributions will be committed
