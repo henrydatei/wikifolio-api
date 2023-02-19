@@ -772,3 +772,22 @@ class Wikifolio:
         r.raise_for_status()
         raw_json = r.json()
         return raw_json
+
+
+    def get_portfolio(self):
+        header = {
+            "accept": "application/json",
+        }
+        params = {
+            "country": "de",
+            "language": "de",
+        }
+        r = requests.get(
+            "https://www.wikifolio.com/api/wikifolio/{}/portfolio".format(self.name),
+            params=params,
+            headers=header,
+            cookies=self.cookie,
+        )
+        r.raise_for_status()
+        raw_json = r.json()
+        return raw_json
