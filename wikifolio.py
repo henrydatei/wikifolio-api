@@ -742,6 +742,8 @@ class Wikifolio:
         r.raise_for_status()
         return PriceInformation(**r.json())
 
+    
+    # ! bad style to return "False, 0" etc.
     def is_in_portfolio(self, isin: str) -> typing.Tuple[bool, int]:
         """
         Returns for a given ISIN if the asset is in the portfolio and the current value of the asset.
@@ -755,3 +757,18 @@ class Wikifolio:
             return True, content[isin]
         else:
             return False, 0
+
+    
+    # added by Quantomas
+    def remove_order(self, order_uuid: str):
+        params = {
+            "order": order_uuid,
+        }
+        r = requests.post(
+            "https://www.wikifolio.com/dynamic/de/de/publish/removevirtualorder",
+            data=params,
+            cookies=self.cookie,
+        )
+        r.raise_for_status()
+        raw_json = r.json()
+        return raw_json
