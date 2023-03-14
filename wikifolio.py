@@ -24,7 +24,7 @@ class Wikifolio:
     rawData = None
     twoFA_key = None
 
-    def __init__(self, username: str, password: str, wikifolio_name: str, twoFA_key = None) -> None:
+    def __init__(self, username: str, password: str, wikifolio_name: str, twoFA_key = None, postprocessRawData: typing.Optional[bool] = True) -> None:
         params = {
             "email": username,
             "password": password,
@@ -37,17 +37,20 @@ class Wikifolio:
         r.raise_for_status()
         self.cookie = r.cookies
         self.name = wikifolio_name
-        self._get_wikifolio_id(wikifolio_name)
+        self._get_wikifolio_id(wikifolio_name, postprocessRawData)
         self.twoFA_key = twoFA_key
 
-    def _get_wikifolio_id(self, name: str) -> None:
+    def _get_wikifolio_id(self, name: str, postprocessRawData: typing.Optional[bool] = True) -> None:
         r = requests.get(
             "https://www.wikifolio.com/de/de/w/{}".format(name),
             cookies=self.cookie,
         )
         r.raise_for_status()
-        html = etree.fromstring(r.text)
-        result = json.loads(html.xpath('//*[@id="__NEXT_DATA__"]/text()')[0])
+        rawData = r.text
+        if postprocessRawData:
+            rawData = rawData.replace('& ', '')
+        html_parsed = etree.fromstring(rawData)
+        result = json.loads(html_parsed.xpath('//*[@id="__NEXT_DATA__"]/text()')[0])
         self.wikifolio_id = result["props"]["pageProps"]["data"]["wikifolio"]["id"]
         self.rawData = result
 
@@ -767,6 +770,25 @@ class Wikifolio:
         r = requests.post(
             "https://www.wikifolio.com/dynamic/de/de/publish/removevirtualorder",
             data=params,
+            cookies=self.cookie,
+        )
+        r.raise_for_status()
+        raw_json = r.json()
+        return raw_json
+
+
+    def get_portfolio(self):
+        header = {
+            "accept": "application/json",
+        }
+        params = {
+            "country": "de",
+            "language": "de",
+        }
+        r = requests.get(
+            "https://www.wikifolio.com/api/wikifolio/{}/portfolio".format(self.name),
+            params=params,
+            headers=header,
             cookies=self.cookie,
         )
         r.raise_for_status()
