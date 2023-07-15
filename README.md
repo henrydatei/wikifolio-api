@@ -3,6 +3,7 @@ A Python API-Wrapper for the unofficial wikifolio API
 
 ## Usage
 - Clone this repo
+- Install dependecies with `pip install -r requirements.txt`
 - Create a new file inside it with the following content (the wikifolio-ID is the name of your wikifolio, e.g. "wf000igb03")
 - **Very important suggestion for everbody using this package!** Don't overdo the API calls. The wikifolio team is not stupid, make pauses/delays between EVERY api action, for example a few seconds. Otherwise it is likely that your IP or account gets blocked. Don't abuse this package to "make a full copy" of the wikifolios on your machine. **Only use what you really need!**
 
