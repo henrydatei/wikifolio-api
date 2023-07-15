@@ -47,7 +47,7 @@ class Wikifolio:
         )
         r.raise_for_status()
         save_text = r.text.replace ('&', '&amp;')
-+       html = etree.fromstring(save_text)
+        html = etree.fromstring(save_text)
         result = json.loads(html.xpath('//*[@id="__NEXT_DATA__"]/text()')[0])
         self.wikifolio_id = result["props"]["pageProps"]["data"]["wikifolio"]["id"]
         self.rawData = result
