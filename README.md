@@ -16,6 +16,7 @@ print(wf.performance_ever)
 
 ## Current state of functionality
 - tested on a wikifolio which is (not yet) investible [19.02.2023], all things except buy_quote/sell_quote succesfully tested. For my purpose limit (and stop-limit) orders are sufficient.
+- tested on a wikifolio which is investible [03.08.2023]: Wikifolio has changed some structured data. Fixed things (hopefully all), tested some. _I need to write some tests to be sure that everything works as expected if this happens more often._
 
 ## Features
 - Perfomance Indicators (`wf.performance_since_emission`, `wf.performance_ever`, ...)

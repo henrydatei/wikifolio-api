@@ -48,28 +48,36 @@ class Wikifolio:
         r.raise_for_status()
         save_text = r.text.replace ('&', '&amp;')
         html = etree.fromstring(save_text)
+        # html = etree.fromstring(r.text)
         result = json.loads(html.xpath('//*[@id="__NEXT_DATA__"]/text()')[0])
         self.wikifolio_id = result["props"]["pageProps"]["data"]["wikifolio"]["id"]
         self.rawData = result
 
-    def _get_wikifolio_key_figure(self, metric) -> typing.Optional[float]:
+    def _get_wikifolio_key_figure(self, metric, submetric = 0, section = "kpis") -> typing.Optional[float]:
         try:
             key_figures = self.rawData["props"]["pageProps"]["data"]["keyFigures"]
-            return key_figures[metric]["ranking"]["value"]
-        except:
+            
+            if metric == "totalInvestments" or metric == "tradingVolume" or metric == "liquidationFigure":
+                return key_figures[metric]["ranking"]["value"]
+            else:
+                return key_figures[section][metric]["rankings"][submetric]["ranking"]["value"]
+        except Exception as e:
+            print("Error at _get_wikifolio_key_figure -> Open a issue on GitHub: " + str(e))
             return None
 
     def _get_wikifolio_data(self, metric):
         try:
             key_figures = self.rawData["props"]["pageProps"]["data"]["wikifolio"]
             return key_figures[metric]
-        except:
+        except Exception as e:
+            print("Error at _get_wikifolio_data -> Open a issue on GitHub: " + str(e))
             return None
 
     def _get_wikifolio_universes(self, universe, subuniverse) -> typing.Optional[bool]:
         try:
             allowed = not self.rawData["props"]["pageProps"]["data"]["investmentUniverseData"]["universeGroups"][universe]["universes"][subuniverse]["isCrossedOut"]
-        except:
+        except Exception as e:
+            print("Error at _get_wikifolio_universes -> Open a issue on GitHub: " + str(e))
             allowed = False
         return allowed
 
@@ -77,64 +85,153 @@ class Wikifolio:
         key_figures = self.rawData["props"]["pageProps"]["data"]["masterData"]
         try:
             return key_figures[metric]["value"]
-        except:
+        except Exception as e:
+            print("Error at _get_wikifolio_master_data -> Open a issue on GitHub: " + str(e))
+            return None
+        
+    def _get_wikifolio_certificates(self, metric):
+        try:
+            key_figures = self.rawData["props"]["pageProps"]["data"]["certificates"][0]
+            return key_figures[metric]
+        except Exception as e:
+            print("Error at _get_wikifolio_certificates -> Open a issue on GitHub: " + str(e))
             return None
 
     @property
     def performance_since_emission(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("performanceSinceEmission")
+        return self._get_wikifolio_key_figure(2, 1)
 
     @property
     def performance_ever(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("performanceEver")
+        return self._get_wikifolio_key_figure(2, 0)
 
     @property
     def performance_one_year(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("performanceOneYear")
-
+        return self._get_wikifolio_key_figure(0, 3)
+    
     @property
-    def performance_three_years(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("performance3Years")
-
-    @property
-    def performance_five_years(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("performance5Years")
+    def volatility_one_year(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(0, 7)
 
     @property
     def performance_ytd(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("performanceYTD")
+        return self._get_wikifolio_key_figure(2, 2)
 
     @property
-    def performance_annualized(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("performanceAnnualized")
+    def performance_annualized_ever(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(0, 0)
+    
+    @property
+    def performance_annualized_five_years(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(0, 1)
+    
+    @property
+    def performance_annualized_three_years(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(0, 2)
+    
+    @property
+    def volatility_annualized_ever(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(0, 4)
+    
+    @property
+    def volatility_annualized_five_years(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(0, 5)
+    
+    @property
+    def volatility_annualized_three_years(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(0, 6)
+    
+    @property
+    def performance_seven_days(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(2, 7)
 
     @property
     def performance_one_month(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("performanceOneMonth")
+        return self._get_wikifolio_key_figure(2, 6)
+    
+    @property
+    def performance_three_months(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(2, 5)
 
     @property
     def performance_six_months(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("performance6Months")
+        return self._get_wikifolio_key_figure(2, 4)
 
     @property
     def performance_intraday(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("performanceIntraday")
+        return self._get_wikifolio_key_figure(2, 3)
 
     @property
-    def max_loss(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("maxLoss")
+    def max_loss_ever(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(0, 0, "otherKeyRiskIndicators")
 
     @property
-    def risk_factor(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("riskFactor")
+    def return_risk_ever(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(0, 1, "otherKeyRiskIndicators")
 
     @property
-    def sharp_ratio(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("sharpRatio")
+    def sharp_ratio_ever(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(0, 2, "otherKeyRiskIndicators")
+    
+    @property
+    def sortino_ratio_ever(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(0, 3, "otherKeyRiskIndicators")
+    
+    @property
+    def max_loss_five_years(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(1, 0, "otherKeyRiskIndicators")
+
+    @property
+    def return_risk_five_years(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(1, 1, "otherKeyRiskIndicators")
+
+    @property
+    def sharp_ratio_five_years(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(1, 2, "otherKeyRiskIndicators")
+    
+    @property
+    def sortino_ratio_five_years(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(1, 3, "otherKeyRiskIndicators")
+    
+    @property
+    def max_loss_three_years(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(2, 0, "otherKeyRiskIndicators")
+
+    @property
+    def return_risk_three_years(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(2, 1, "otherKeyRiskIndicators")
+
+    @property
+    def sharp_ratio_three_years(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(2, 2, "otherKeyRiskIndicators")
+    
+    @property
+    def sortino_ratio_three_years(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(2, 3, "otherKeyRiskIndicators")
+    
+    @property
+    def max_loss_one_year(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(3, 0, "otherKeyRiskIndicators")
+
+    @property
+    def return_risk_one_year(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(3, 1, "otherKeyRiskIndicators")
+
+    @property
+    def sharp_ratio_one_year(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(3, 2, "otherKeyRiskIndicators")
+    
+    @property
+    def sortino_ratio_one_year(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(3, 3, "otherKeyRiskIndicators")
 
     @property
     def ranking_place(self) -> typing.Optional[float]:
-        return self._get_wikifolio_key_figure("rankingPlace")
+        return self._get_wikifolio_key_figure(1, 0)
+    
+    @property
+    def watchlistings(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure(1, 1)
 
     @property
     def total_investments(self) -> typing.Optional[float]:
@@ -149,8 +246,8 @@ class Wikifolio:
         return self._get_wikifolio_key_figure("tradingVolume")
 
     @property
-    def wikifolio_security_id(self) -> typing.Optional[str]:
-        return self._get_wikifolio_data("wikifolioSecurityId")
+    def id(self) -> typing.Optional[str]:
+        return self._get_wikifolio_data("id")
 
     @property
     def full_name(self) -> typing.Optional[str]:
@@ -173,36 +270,16 @@ class Wikifolio:
         return self._get_wikifolio_data("status")
 
     @property
-    def wkn(self) -> typing.Optional[str]:
-        return self._get_wikifolio_data("wkn")
-
-    @property
     def is_on_watchlist(self) -> typing.Optional[bool]:
         return self._get_wikifolio_data("isOnWatchlist")
-
+    
     @property
-    def is_licensed(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_data("isLicensed")
-
-    @property
-    def is_investable(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_data("isInvestable")
-
-    @property
-    def has_been_investable(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_data("hasBeenInvestable")
-
-    @property
-    def isin(self) -> typing.Optional[str]:
-        return self._get_wikifolio_data("isin")
+    def emission_date(self) -> typing.Optional[str]:
+        return self._get_wikifolio_data("emissionDate")
 
     @property
     def chart_image_url(self) -> typing.Optional[str]:
         return self._get_wikifolio_data("chartImageUrl")
-
-    @property
-    def emission_date(self) -> typing.Optional[str]:
-        return self._get_wikifolio_data("emissionDate")
 
     @property
     def daily_fee(self) -> typing.Optional[float]:
@@ -219,14 +296,6 @@ class Wikifolio:
     @property
     def contains_leverage_products(self) -> typing.Optional[bool]:
         return self._get_wikifolio_data("containsLeverageProducts")
-
-    @property
-    def exchange_ratio_multiplier(self) -> typing.Optional[float]:
-        return self._get_wikifolio_data("exchangeRatioMultiplier")
-
-    @property
-    def is_second_isin(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_data("isSecondIsin")
 
     @property
     def currency(self) -> typing.Optional[str]:
@@ -415,6 +484,38 @@ class Wikifolio:
     @property
     def high_watermark(self) -> typing.Optional[str]:
         return self._get_wikifolio_master_data("highWatermark")
+    
+    @property
+    def has_blocked_reason(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_certificates("hasBlockedReason")
+    
+    @property
+    def wikifolio_security_id(self) -> typing.Optional[str]:
+        return self._get_wikifolio_certificates("wikifolioSecurityId")
+    
+    @property
+    def isin(self) -> typing.Optional[str]:
+        return self._get_wikifolio_certificates("isin")
+    
+    @property
+    def is_licensed(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_certificates("isLicensed")
+    
+    @property
+    def exchange_ratio_multiplier(self) -> typing.Optional[float]:
+        return self._get_wikifolio_certificates("exchangeRatioMultiplier")
+    
+    @property
+    def wkn(self) -> typing.Optional[str]:
+        return self._get_wikifolio_certificates("wkn")
+    
+    @property
+    def is_primary(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_certificates("isPrimary")
+    
+    @property
+    def is_hidden(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_certificates("isHidden")
     
     def get_tags(self) -> typing.List[str]:
         tags = []
