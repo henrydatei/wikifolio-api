@@ -166,7 +166,7 @@ class Wikifolio:
         return self._get_wikifolio_key_figure(0, 0, "otherKeyRiskIndicators")
 
     @property
-    def return_risk_ever(self) -> typing.Optional[float]:
+    def risk_ever(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure(0, 1, "otherKeyRiskIndicators")
 
     @property
@@ -182,7 +182,7 @@ class Wikifolio:
         return self._get_wikifolio_key_figure(1, 0, "otherKeyRiskIndicators")
 
     @property
-    def return_risk_five_years(self) -> typing.Optional[float]:
+    def risk_five_years(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure(1, 1, "otherKeyRiskIndicators")
 
     @property
@@ -198,7 +198,7 @@ class Wikifolio:
         return self._get_wikifolio_key_figure(2, 0, "otherKeyRiskIndicators")
 
     @property
-    def return_risk_three_years(self) -> typing.Optional[float]:
+    def risk_three_years(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure(2, 1, "otherKeyRiskIndicators")
 
     @property
@@ -214,7 +214,7 @@ class Wikifolio:
         return self._get_wikifolio_key_figure(3, 0, "otherKeyRiskIndicators")
 
     @property
-    def return_risk_one_year(self) -> typing.Optional[float]:
+    def risk_one_year(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure(3, 1, "otherKeyRiskIndicators")
 
     @property
