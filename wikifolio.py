@@ -275,7 +275,7 @@ class Wikifolio:
     
     @property
     def emission_date(self) -> typing.Optional[str]:
-        return self._get_wikifolio_data("emissionDate")
+        return self._get_wikifolio_certificates("emissionDate")
 
     @property
     def chart_image_url(self) -> typing.Optional[str]:
@@ -476,10 +476,6 @@ class Wikifolio:
     @property
     def creation_date(self) -> typing.Optional[str]:
         return self._get_wikifolio_master_data("creationDate")
-
-    @property
-    def index_level(self) -> typing.Optional[str]:
-        return self._get_wikifolio_master_data("indexLevel")
 
     @property
     def high_watermark(self) -> typing.Optional[str]:
