@@ -84,7 +84,10 @@ class Wikifolio:
     def _get_wikifolio_master_data(self, metric):
         key_figures = self.rawData["props"]["pageProps"]["data"]["masterData"]
         try:
-            return key_figures[metric]["value"]
+            if key_figures[metric] is None:
+                return None
+            else:
+                return key_figures[metric]["value"]
         except Exception as e:
             print("Error at _get_wikifolio_master_data -> Open a issue on GitHub: " + str(e))
             return None
