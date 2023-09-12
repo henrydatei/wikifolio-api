@@ -1,6 +1,6 @@
 import requests
 from requests.structures import CaseInsensitiveDict
-from lxml import etree
+from lxml import etree, html
 import json
 import typing
 from datetime import datetime, timedelta
@@ -47,9 +47,10 @@ class Wikifolio:
         )
         r.raise_for_status()
         save_text = r.text.replace ('&', '&amp;')
-        html = etree.fromstring(save_text)
+        # html = etree.fromstring(save_text)
+        html2 = html.fromstring(save_text)
         # html = etree.fromstring(r.text)
-        result = json.loads(html.xpath('//*[@id="__NEXT_DATA__"]/text()')[0])
+        result = json.loads(html2.xpath('//*[@id="__NEXT_DATA__"]/text()')[0])
         self.wikifolio_id = result["props"]["pageProps"]["data"]["wikifolio"]["id"]
         self.rawData = result
 
