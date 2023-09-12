@@ -852,8 +852,11 @@ class Wikifolio:
         """
         content = {}
         for underlying in self.get_content().underlyings:
-            _isin = self.search(underlying.name)[0].Isin
-            content[_isin] = underlying.amount
+            results = self.search(underlying.name)#[0].Isin
+            for result in results:
+                if isin in result.Isin:
+                    _isin = result.Isin
+                    content[_isin] = underlying.amount
         
         if isin in content:
             return True, content[isin]
