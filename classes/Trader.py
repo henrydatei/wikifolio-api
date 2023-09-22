@@ -4,6 +4,8 @@ from dataclasses import dataclass
 class Trader:
     id: str
     fullName: str
+    firstName: str
+    lastName: str
     nickName: str
     companyName: str
     imgUrl: str

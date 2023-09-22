@@ -1,6 +1,6 @@
 import requests
 from requests.structures import CaseInsensitiveDict
-from lxml import etree
+from lxml import etree, html
 import json
 import typing
 from datetime import datetime, timedelta
@@ -48,9 +48,10 @@ class Wikifolio:
         )
         r.raise_for_status()
         save_text = r.text.replace ('&', '&amp;')
-        html = etree.fromstring(save_text)
+        # html = etree.fromstring(save_text)
+        html2 = html.fromstring(save_text)
         # html = etree.fromstring(r.text)
-        result = json.loads(html.xpath('//*[@id="__NEXT_DATA__"]/text()')[0])
+        result = json.loads(html2.xpath('//*[@id="__NEXT_DATA__"]/text()')[0])
         self.wikifolio_id = result["props"]["pageProps"]["data"]["wikifolio"]["id"]
         self.rawData = result
 
@@ -74,13 +75,16 @@ class Wikifolio:
             print("Error at _get_wikifolio_data -> Open a issue on GitHub: " + str(e))
             return None
 
-    def _get_wikifolio_universes(self, universe, subuniverse) -> typing.Optional[bool]:
+    def _get_wikifolio_universes(self, universeID) -> typing.Optional[bool]:
         try:
-            allowed = not self.rawData["props"]["pageProps"]["data"]["investmentUniverseData"]["universeGroups"][universe]["universes"][subuniverse]["isCrossedOut"]
+            for universe in self.rawData["props"]["pageProps"]["data"]["investmentUniverseData"]["universeGroups"]:
+                for subuniverse in universe["universes"]:
+                    if subuniverse["universeId"] == universeID:
+                        return not subuniverse["isCrossedOut"]
+            return False
         except Exception as e:
             print("Error at _get_wikifolio_universes -> Open a issue on GitHub: " + str(e))
-            allowed = False
-        return allowed
+            return False
 
     def _get_wikifolio_master_data(self, metric):
         key_figures = self.rawData["props"]["pageProps"]["data"]["masterData"]
@@ -311,171 +315,179 @@ class Wikifolio:
 
     @property
     def shares_dax(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(0,0)
+        return self._get_wikifolio_universes("da870873-7d10-43b5-876c-02c7cb8937e5")
 
     @property
     def shares_sdax(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(0,1)
+        return self._get_wikifolio_universes("7dcd222a-12ca-4ce6-820d-0805ee004482")
 
     @property
     def shares_tecdax(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(0,2)
+        return self._get_wikifolio_universes("f77db207-fda1-438b-90ec-5b5381565d81")
 
     @property
     def shares_other(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(0,3)
+        return self._get_wikifolio_universes("4ed82368-a861-4e1e-b1d4-d8f6bcb6cb6f")
 
     @property
     def shares_mdax(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(0,4)
+        return self._get_wikifolio_universes("6a836034-4b33-4531-9402-fd6068ecda5a")
 
     @property
     def shares_europe_select(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(1,0)
+        return self._get_wikifolio_universes("8d5f2d22-9c3c-441e-b0a0-23342b9c1db2")
 
     @property
     def shares_dow_jones(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(2,0)
+        return self._get_wikifolio_universes("dd4a3a18-53e0-4047-b37f-5ace8112ab0c")
 
     @property
     def shares_usa_select(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(2,1)
+        return self._get_wikifolio_universes("a0693bd6-7b51-4031-b381-6b76ebfa9a6a")
 
     @property
     def shares_nasdaq_100_select(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(2,2)
+        return self._get_wikifolio_universes("de2e1ca3-a1fd-426f-9333-a2ac5b27bd52")
 
     @property
     def shares_hot_stocks(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(3,0)
+        return self._get_wikifolio_universes("62efef92-833b-450d-99e2-08f60a5885bc")
 
     @property
     def shares_easteurope_select(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(4,0)
+        return self._get_wikifolio_universes("e858d05d-2f77-4928-9023-1d8fa944e636")
 
     @property
     def shares_japan_select(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(4,1)
+        return self._get_wikifolio_universes("c4f65620-a604-48d9-b59c-52f58fa8e78e")
 
     @property
     def shares_international(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(4,2)
+        return self._get_wikifolio_universes("14e30818-8621-4264-96d5-5b57380ee49e")
 
     @property
     def etf_latin_southamerica(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,0)
+        return self._get_wikifolio_universes("357a544f-c541-4382-a655-0454d5bd5658")
 
     @property
     def etf_emerging_markets(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,1)
+        return self._get_wikifolio_universes("43e21751-010a-4b74-9d2f-0f036c4fc685")
 
     @property
     def etf_coutries_of_europe(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,2)
+        return self._get_wikifolio_universes("44c06373-b986-4f7d-a3da-18d48a0a55f2")
 
     @property
     def etf_northamerica(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,3)
+        return self._get_wikifolio_universes("eeae8096-5bb1-4e0a-a52d-42ef32edc09a")
 
     @property
     def etf_other_bonds(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,4)
+        return self._get_wikifolio_universes("68fc56f7-9808-4d9c-aa27-5986764e406f")
 
     @property
     def etf_world(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,5)
+        return self._get_wikifolio_universes("f5a41706-f992-481e-b29e-5a6c29785b48")
 
     @property
     def etf_commodities_etcs(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,6)
+        return self._get_wikifolio_universes("1f341239-e781-4b83-9bb5-78157e39dfc5")
 
     @property
     def etf_germany(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,7)
+        return self._get_wikifolio_universes("0df01ac1-34be-411f-9ade-8f1a9dc0bb63")
 
     @property
     def etf_countries_other(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,8)
+        return self._get_wikifolio_universes("332fabc2-8b1a-470b-a15c-9f3c2194767d")
 
     @property
     def etf_dax(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,9)
+        return self._get_wikifolio_universes("76cb8c2e-4350-4920-95d1-b54ab188cbf9")
 
     @property
     def etf_induboolies(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,10)
+        return self._get_wikifolio_universes("4a4761c9-44ee-4b02-ad82-b8619bd983ca")
 
     @property
     def etf_eurostoxx(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,11)
+        return self._get_wikifolio_universes("a271bc7c-bf91-4136-8c07-c6719c58a677")
 
     @property
     def etf_asia(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,12)
+        return self._get_wikifolio_universes("6fccde8c-b5c4-4025-b2b0-ca2a7d659343")
 
     @property
     def etf_europe_bonds(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,13)
+        return self._get_wikifolio_universes("46439af0-7ffa-4838-aeb2-ced53b68aa88")
 
     @property
     def etf_europe_complete(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,14)
+        return self._get_wikifolio_universes("21e97d08-02b0-4c46-86f4-d354f4b4afaa")
 
     @property
     def etf_basic_resources(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,15)
+        return self._get_wikifolio_universes("95df7a0b-1053-40a7-88d3-e61eaaa062d7")
 
     @property
     def etf_other(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(5,16)
+        return self._get_wikifolio_universes("0287c03d-79c4-4cf2-a137-fee9894c99ad")
 
     @property
     def fund_properties(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(6,0)
+        return self._get_wikifolio_universes("bba3bb39-9bbe-4b64-a25a-0c6890ef7b33")
 
     @property
-    def fund_bonds(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(6,1)
+    def fund_pensions(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes("43f9d2a7-b228-4e98-a018-5d9674a4ffa2")
 
     @property
     def fund_shares(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(6,2)
+        return self._get_wikifolio_universes("672728c1-9f4e-478e-8ad0-5da1b4d66fc4")
 
     @property
-    def fund_finance_market(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(6,3)
+    def fund_money_market(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes("2d46a35e-8c1e-40b3-9e42-ce26cfd38bfd")
 
     @property
     def fund_dab(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(6,4)
+        return self._get_wikifolio_universes("3c5e1fde-5a9b-410c-8e44-d6ed8b6de3eb")
 
     @property
     def fund_mix(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(6,5)
+        return self._get_wikifolio_universes("b646ed50-b5ce-4f31-bebb-f41de18d1476")
 
     @property
     def discount_certificates(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(7,0)
+        return self._get_wikifolio_universes("3aff82bb-1eea-41c8-8323-1c29f235ce17")
 
     @property
     def bonus_certificates(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(7,1)
+        return self._get_wikifolio_universes("19185531-d2a0-4b7c-aa71-e1ad9bd49db0")
 
     @property
     def other_investment_certificates(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(7,2)
+        return self._get_wikifolio_universes("0357c30d-79c4-4cf2-a137-efe1239d22fc")
 
     @property
     def knock_out_products(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(8,0)
+        return self._get_wikifolio_universes("0f69d224-6c92-4474-8254-57f5dad1702e")
 
     @property
     def warrants(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(8,1)
+        return self._get_wikifolio_universes("cb052c62-bfff-4d90-895b-a24c1581fa4f")
 
     @property
     def other_leverage_products(self) -> typing.Optional[bool]:
-        return self._get_wikifolio_universes(8,2)
+        return self._get_wikifolio_universes("f8ba6432-181b-4160-b998-ddd1722b7e7d")
+    
+    @property
+    def wikifolio_certificates_with_leverage_products(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes("76b80dba-5bad-4aba-bbe1-c33770a8eccd")
+    
+    @property
+    def wikifolio_certificates_without_leverage_products(self) -> typing.Optional[bool]:
+        return self._get_wikifolio_universes("b42afb72-dfd9-4c22-b423-e626b7395995")
 
     @property
     def creation_date(self) -> typing.Optional[str]:
