@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 test.py
 .DS_Store
-trader.py
+update_wfiq4stocks.py
