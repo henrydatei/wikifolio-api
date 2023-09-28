@@ -16,7 +16,7 @@ from classes.Portfolio import Portfolio
 from classes.PortfolioUnderlying import PortfolioUnderlying
 from classes.Trader import Trader
 from classes.PriceInformation import PriceInformation
-from classes.PortfolioDetails import PortfolioDetails
+from classes.PortfolioDetail import PortfolioDetail
 
 class Wikifolio:
     cookie = None
@@ -678,7 +678,7 @@ class Wikifolio:
         orders = raw_json["tradeHistory"]["orders"]
         return [Order(**raw_order) for raw_order in orders]
     
-    def get_portfolio_details(self) -> typing.List[dict[PortfolioDetails]]:
+    def get_portfolio_details(self) -> typing.List[PortfolioDetail]:
         header = {
             "accept": "application/json",
         }
@@ -695,7 +695,7 @@ class Wikifolio:
         r.raise_for_status()
         raw_json = r.json()
         details = raw_json['groups'][0]['items']
-        return details
+        return [PortfolioDetail(**raw_detail) for raw_detail in details]
 
     def buy_quote(self, amount: int, isin: str) -> OrderResponse:
         i = 1

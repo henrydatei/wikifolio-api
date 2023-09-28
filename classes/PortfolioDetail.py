@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 @dataclass(frozen = True)
-class PortfolioDetails:
+class PortfolioDetail:
     name: str
     isin: str
     quantity: float
@@ -12,7 +12,7 @@ class PortfolioDetails:
     percentage: float
     link: str
     openLinkInSameTab: bool
-    issuer: str
+    issuer: int
     mid: float
     isLeveraged: bool
     isTicking: bool
