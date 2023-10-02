@@ -573,8 +573,7 @@ class Wikifolio:
             cookies=self.cookie,
         )
         r.raise_for_status()
-        print(self.cookie)
-        print(r.text)
+        # print(r.json())
         raw_json = r.json()
         return OrderResponse(**raw_json)
 
@@ -609,6 +608,7 @@ class Wikifolio:
         )
         r.raise_for_status()
         raw_json = r.json()
+        # print(r.json())
         return OrderResponse(**raw_json)
 
     def trade_execution_status(self, order_uuid: str) -> ExecutionStatusResponse:
