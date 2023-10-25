@@ -61,6 +61,8 @@ class Wikifolio:
             
             if metric == "totalInvestments" or metric == "tradingVolume" or metric == "liquidationFigure":
                 return key_figures[metric]["ranking"]["value"]
+            elif metric == "rankingPlace":
+                return key_figures["kpis"][1]["rankings"][0]["ranking"]["place"]
             else:
                 return key_figures[section][metric]["rankings"][submetric]["ranking"]["value"]
         except Exception as e:
@@ -235,6 +237,10 @@ class Wikifolio:
 
     @property
     def ranking_place(self) -> typing.Optional[float]:
+        return self._get_wikifolio_key_figure("rankingPlace")
+    
+    @property
+    def ranking_points(self) -> typing.Optional[float]:
         return self._get_wikifolio_key_figure(1, 0)
     
     @property
