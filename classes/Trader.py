@@ -3,7 +3,6 @@ from dataclasses import dataclass
 @dataclass(frozen = True)
 class Trader:
     id: str
-    fullName: str
     firstName: str
     lastName: str
     nickName: str
