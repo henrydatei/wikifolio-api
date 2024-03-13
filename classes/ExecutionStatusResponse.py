@@ -6,3 +6,5 @@ class ExecutionStatusResponse:
     message: str
     continueCheck: bool
     isRejected: bool
+    quantity: float
+    cashAccountCurrentBalance: float
